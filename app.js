@@ -24,6 +24,10 @@ const store = {
 const clone = (x) => JSON.parse(JSON.stringify(x));
 const FEATURED = ["jev", "openrouter", "gemini", "groq", "openai", "anthropic"];
 const loopback = ["127.0.0.1", "localhost"].includes(location.hostname);
+// A hosted page reaching 127.0.0.1 needs the browser's local-network
+// permission (Chrome asks once). A refusal looks exactly like "not running".
+const LNA_HINT = loopback ? "" :
+  " If it is running, your browser may have blocked this page from reaching your machine: allow local network access for this site when asked (or in its site settings), or use the copy the proxy serves at http://127.0.0.1:8787.";
 
 const remember = store.get("localStorage", "sj.remember", false);
 const keys = store.get(remember ? "localStorage" : "sessionStorage", "sj.keys", {});
@@ -379,7 +383,7 @@ async function run() {
       Object.assign(r, { status: "done", result });
     } catch (e) {
       let msg = e.message;
-      if (p.proxy && e.status === 0) msg += ` ${p.label} needs the local proxy: run "node proxy.mjs" and check the proxy address in Settings.`;
+      if (p.proxy && e.status === 0) msg += ` ${p.label} needs the local proxy: run "node proxy.mjs" and check the proxy address in Settings.${LNA_HINT}`;
       else if (p.local && e.status === 0) msg += ` Is ${p.label} running at ${cfg.base}? Its server must allow this page's origin.`;
       Object.assign(r, { status: "error", error: msg });
     }
@@ -614,7 +618,7 @@ async function checkProxy() {
     if (!j.ok || j.app !== "snap-judge-proxy") throw new Error("not the Snap Judge proxy");
     out.textContent = `Proxy is running. It forwards: ${j.forwards.join(", ")}.`;
   } catch {
-    out.textContent = `No Snap Judge proxy at ${S.settings.proxy}. From the repo folder run "node proxy.mjs", then open http://127.0.0.1:8787.`;
+    out.textContent = `No Snap Judge proxy at ${S.settings.proxy}. From the repo folder run "node proxy.mjs", then open http://127.0.0.1:8787.${LNA_HINT}`;
   }
 }
 
