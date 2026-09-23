@@ -1,0 +1,14 @@
+{
+  "name": "snap-judge",
+  "version": "0.1.0",
+  "description": "Ask typed questions in TypeSafe Jev's format and run them on Jev or any LLM.",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "author": "Stealth Keqing",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node proxy.mjs",
+    "test": "node --test tests/*.test.mjs"
+  }
+}

@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Snap Judge</title>
+  <meta name="description" content="Ask typed questions in TypeSafe Jev's format - noul, choice, score - and run them on Jev or any LLM. See probabilities, confidence and type violations side by side.">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to the editor</a>
+
+  <header class="top">
+    <div class="wrap top-inner">
+      <div class="brand">
+        <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="18" width="5" height="10" rx="1"/><rect x="10.5" y="8" width="5" height="20" rx="1"/><rect x="18" y="14" width="5" height="14" rx="1"/><path d="M25 5 L29 5 L27 9 Z"/></svg>
+        <span class="name">Snap Judge</span>
+      </div>
+      <nav class="top-links" aria-label="Links">
+        <a href="#how">How it works</a>
+        <a href="https://github.com/Arnav1771/snap-judge">Source</a>
+        <button type="button" class="theme" id="theme" aria-label="Switch colour theme">◐</button>
+      </nav>
+    </div>
+  </header>
+
+  <section class="intro wrap">
+    <h1>Probabilities, <em>not prose</em>.</h1>
+    <p class="lede">Write questions in <a href="https://docs.typesafe.ai/primitives">TypeSafe Jev's</a> three types - yes/no, pick one, pick a level - and run them on Jev or on any LLM. Jev returns a distribution in one call. An LLM returns one answer, so Snap Judge asks it several times and counts the votes, showing how sure each model really is and how often it answers outside the options you gave.</p>
+    <p class="fine">Independent project, not affiliated with TypeSafe AI. Your keys stay in this browser and go only to the provider you pick.</p>
+  </section>
+
+  <main id="main" class="wrap layout">
+    <section class="col ask" aria-labelledby="ask-h">
+      <div class="col-head">
+        <h2 id="ask-h">Ask</h2>
+        <label class="preset">
+          <span>Start from</span>
+          <select id="preset"></select>
+        </label>
+      </div>
+      <p class="pattern" id="pattern"></p>
+
+      <div class="card">
+        <div class="field-head">
+          <label for="state" class="label">State <span class="hint">- the content to judge</span></label>
+          <label class="toggle"><input type="checkbox" id="state-json"> JSON</label>
+        </div>
+        <textarea id="state" rows="6" spellcheck="false"></textarea>
+        <p class="err" data-err="state"></p>
+      </div>
+
+      <div id="questions"></div>
+      <p class="err" data-err="questions"></p>
+
+      <div class="add-row" role="group" aria-label="Add a question">
+        <span class="label">Add</span>
+        <button type="button" class="btn ghost" data-add="noul">Yes/no <code>noul</code></button>
+        <button type="button" class="btn ghost" data-add="choice">Pick one <code>choice</code></button>
+        <button type="button" class="btn ghost" data-add="score">Level <code>score</code></button>
+      </div>
+
+      <details class="card export">
+        <summary>Code for the real TypeSafe API</summary>
+        <div class="tabs" role="tablist" id="export-tabs">
+          <button type="button" role="tab" data-fmt="json" aria-selected="true">JSON</button>
+          <button type="button" role="tab" data-fmt="curl" aria-selected="false">curl</button>
+          <button type="button" role="tab" data-fmt="python" aria-selected="false">Python</button>
+          <button type="button" role="tab" data-fmt="js" aria-selected="false">JavaScript</button>
+          <button type="button" class="btn small copy" id="copy-export">Copy</button>
+        </div>
+        <pre class="code" id="export-code" tabindex="0"></pre>
+      </details>
+    </section>
+
+    <section class="col run" aria-labelledby="run-h">
+      <div class="col-head">
+        <h2 id="run-h">Run on</h2>
+        <span class="count" id="enabled-count"></span>
+      </div>
+
+      <div id="providers" class="providers"></div>
+
+      <details class="card settings">
+        <summary>Sampling, thresholds and the local proxy</summary>
+        <div class="grid2">
+          <label class="lbl">Samples per LLM <input type="number" id="n" min="1" max="20" value="5"></label>
+          <label class="lbl">Temperature <input type="number" id="temp" min="0" max="2" step="0.1" value="1"></label>
+          <label class="lbl">Parallel requests <input type="number" id="conc" min="1" max="8" value="3"></label>
+          <label class="lbl">Confidence floor <input type="number" id="t-floor" min="0" max="1" step="0.05" value="0.5"></label>
+          <label class="lbl">Act at or above <input type="number" id="t-act" min="0" max="1" step="0.05" value="0.85"></label>
+          <label class="lbl">Noul yes at <input type="number" id="t-yes" min="0" max="1" step="0.05" value="0.8"></label>
+          <label class="lbl">Noul no at <input type="number" id="t-no" min="0" max="1" step="0.05" value="0.2"></label>
+        </div>
+        <p class="hint">Thresholds follow TypeSafe's <a href="https://docs.typesafe.ai/patterns/confidence-routing">confidence-routing</a> pattern: below the floor a person decides, above "act" the code acts, between them it asks to confirm.</p>
+        <div class="proxy-row">
+          <label class="lbl grow">Local proxy <input type="text" id="proxy" spellcheck="false" placeholder="http://127.0.0.1:8787"></label>
+          <button type="button" class="btn small" id="proxy-check">Check</button>
+        </div>
+        <p class="hint" id="proxy-status">TypeSafe, NVIDIA and Cerebras block browser requests. Run <code>node proxy.mjs</code> from the repo, then open <a href="http://127.0.0.1:8787">127.0.0.1:8787</a> - every provider works there.</p>
+        <label class="toggle"><input type="checkbox" id="remember"> Remember keys on this device</label>
+        <p class="hint">Off: keys last until you close this tab. On: they are kept in this browser's storage for this site.</p>
+      </details>
+
+      <div class="run-bar">
+        <button type="button" class="btn primary" id="run">Run</button>
+        <span class="run-status" id="run-status" role="status" aria-live="polite"></span>
+      </div>
+
+      <div id="results" class="results" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <section id="how" class="wrap how" aria-labelledby="how-h">
+    <h2 id="how-h">How it works</h2>
+    <div class="how-grid">
+      <div>
+        <h3>Jev</h3>
+        <p>One request, every question answered in parallel, each answer constrained to your options with a probability for every one. The <code>confidence</code> shown for Jev is TypeSafe's own number.</p>
+      </div>
+      <div>
+        <h3>An LLM</h3>
+        <p>Each sample asks all the questions at once and must reply with JSON. Snap Judge checks every answer against its options; anything else is a <strong>type violation</strong> and is left out of the counts. The share of valid votes per option becomes the distribution. With five samples every probability is a multiple of 0.2.</p>
+      </div>
+      <div>
+        <h3>Agreement</h3>
+        <p>For LLMs, "agreement" is our measure: 1 minus the normalised entropy of the votes. TypeSafe does not publish how its confidence is computed, so the two are not the same number. Compare the shapes of the distributions, not the digits.</p>
+      </div>
+      <div>
+        <h3>Your keys</h3>
+        <p>Keys go straight from this page to the provider. The only exception is the three providers behind the local proxy, which runs on your machine, listens only on 127.0.0.1, forwards only to those three hosts, and never logs a key.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot wrap">
+    <span>Snap Judge · by Stealth Keqing · MIT</span>
+    <span>Jev is made by <a href="https://typesafe.ai">TypeSafe AI</a>; this site is not.</span>
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
