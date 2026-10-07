@@ -48,11 +48,17 @@ test("step 3 explains columns, agreement, type violations, and ends on running s
   const step3 = ONBOARDING_STEPS[2];
   assert.match(step3.title, /Read the result/i);
   const text = step3.paragraphs.join(" ");
-  assert.ok(text.includes("agreement"));
-  assert.ok(text.includes("1 - normalised entropy"));
-  assert.ok(text.includes("never call it TypeSafe's confidence"));
+  assert.ok(
+    text.includes(
+      "Agreement shows how closely the models answered alike (1 minus normalised entropy). It is Snap Judge's own measure, not TypeSafe's confidence score."
+    )
+  );
+  assert.ok(!text.includes("never call it"));
   assert.ok(text.includes("type violation"));
   assert.equal(step3.primaryAction.label, "Run the starter question");
+
+  const allUiText = ONBOARDING_STEPS.flatMap((s) => s.paragraphs).join(" ");
+  assert.ok(!allUiText.includes("never call it"));
 });
 
 test("isOnboarded and setOnboarded read and write to storage", () => {
