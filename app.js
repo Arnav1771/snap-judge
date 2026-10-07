@@ -4,6 +4,7 @@ import { runJev, runLlm } from "./lib/run.js";
 import { route, DEFAULT_THRESHOLDS } from "./lib/aggregate.js";
 import { toCurl, toPython, toJs } from "./lib/export.js";
 import { PRESETS } from "./lib/presets.js";
+import { OnboardingController } from "./lib/onboarding.js";
 
 // ---------- storage (every access may throw in a private window) ----------
 const store = {
@@ -141,6 +142,10 @@ function field(where, el) {
 
 function renderQuestions() {
   const box = $("#questions");
+  if (!S.doc.questions.length) {
+    box.replaceChildren(h("p", { class: "empty", text: "No questions yet. Click Add below to create a yes/no, pick one, or level question." }));
+    return;
+  }
   box.replaceChildren(...S.doc.questions.map((q, i) => questionCard(q, i)));
 }
 
@@ -670,6 +675,26 @@ function init() {
   renderAll();
   renderProviders();
   renderResults();
+
+  const onboarding = new OnboardingController({
+    onLoadPreset: (id) => loadPreset(id),
+    onRunStarter: () => {
+      if (!S.doc.questions.length) {
+        loadPreset(PRESETS[0].id);
+      }
+      const chosen = PROVIDERS.filter((p) => S.prov[p.id].on);
+      if (chosen.length > 0) {
+        run();
+      } else {
+        $("#run-status").textContent = "Starter loaded. Pick a provider above, add its key, and press Run.";
+        $("#run").focus();
+        document.querySelector(".providers")?.scrollIntoView({ behavior: "smooth" });
+      }
+    },
+  });
+  onboarding.mount();
+
+  $("#show-welcome")?.addEventListener("click", () => onboarding.open(0));
 }
 
 init();
