@@ -50,7 +50,7 @@
           <label for="state" class="label">State <span class="hint">- the content to judge</span></label>
           <label class="toggle"><input type="checkbox" id="state-json"> JSON</label>
         </div>
-        <textarea id="state" rows="6" spellcheck="false"></textarea>
+        <textarea id="state" rows="6" spellcheck="false" placeholder="Enter or paste the text or data to evaluate, or pick a preset above."></textarea>
         <p class="err" data-err="state"></p>
       </div>
 
@@ -140,7 +140,26 @@
   <footer class="foot wrap">
     <span>Snap Judge · by Stealth Keqing · MIT</span>
     <span>Jev is made by <a href="https://typesafe.ai">TypeSafe AI</a>; this site is not.</span>
+    <button type="button" class="linkish foot-link" id="show-welcome">Show welcome</button>
+    <a href="https://arnav1771.github.io/stealth-keqing/?app=snap-judge" target="_blank" rel="noopener" class="foot-link">Get update emails</a>
   </footer>
+
+  <div id="onboarding-overlay" class="onboarding-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
+    <div class="onboarding-card">
+      <div class="onboarding-header">
+        <span class="onboarding-step" id="onboarding-step-indicator">1 of 3</span>
+        <button type="button" class="btn small ghost onboarding-skip" id="onboarding-skip" aria-label="Skip onboarding">Skip</button>
+      </div>
+      <div class="onboarding-body">
+        <h2 id="onboarding-title" class="onboarding-title"></h2>
+        <div id="onboarding-content" class="onboarding-content"></div>
+      </div>
+      <div class="onboarding-footer">
+        <a href="https://arnav1771.github.io/stealth-keqing/?app=snap-judge" class="onboarding-updates" target="_blank" rel="noopener">Get update emails</a>
+        <div class="onboarding-actions" id="onboarding-actions"></div>
+      </div>
+    </div>
+  </div>
 
   <script type="module" src="app.js"></script>
 </body>
