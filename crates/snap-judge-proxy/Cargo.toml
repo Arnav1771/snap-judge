@@ -1,0 +1,8 @@
+[package]
+name = "snap-judge-proxy"
+version = "0.1.0"
+edition = "2021"
+authors = ["Arnav Bhargava <arnav.bhargava3@gmail.com>"]
+description = "Native zero-dependency local proxy and web server for Snap Judge"
+
+[dependencies]
